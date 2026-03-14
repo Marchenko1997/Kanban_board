@@ -49,7 +49,7 @@ class OpenRouterClient:
 
         if response.status_code >= 400:
             raise OpenRouterError(
-                f"OpenRouter returned {response.status_code}: {response.text}"
+                f"OpenRouter returned HTTP {response.status_code}."
             )
 
         return response.json()

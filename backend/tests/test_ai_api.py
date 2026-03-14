@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.ai_client import OpenRouterError
 from app.main import create_app, get_ai_client
-from app.schemas import BoardData, StructuredAiOutput
+from app.schemas import BoardData, ChatHistoryItem, StructuredAiOutput
 
 
 class FakeAiClient:
@@ -28,7 +28,7 @@ class FakeAiClient:
         self,
         board: BoardData,
         message: str,
-        history: list,
+        history: list[ChatHistoryItem],
     ) -> StructuredAiOutput:
         if self.error:
             raise self.error

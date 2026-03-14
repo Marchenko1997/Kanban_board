@@ -1,11 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const signIn = async (page: Page) => {
+const signIn = async (page: Page, boardTimeout = 10_000) => {
   await page.goto("/");
   await page.getByLabel("Username").fill("user");
   await page.getByLabel("Password").fill("password");
   await page.getByRole("button", { name: /sign in/i }).click();
-  await expect(page.getByRole("heading", { name: "Kanban Studio" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Kanban Studio" })).toBeVisible({ timeout: boardTimeout });
 };
 
 test("requires login before showing the board", async ({ page }) => {
@@ -68,4 +68,18 @@ test("logs out and returns to sign in", async ({ page }) => {
   await signIn(page);
   await page.getByRole("button", { name: /log out/i }).click();
   await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
+});
+
+test("AI sidebar accepts a message and shows a response", async ({ page }) => {
+  await signIn(page, 20_000);
+  const sidebar = page.getByTestId("ai-sidebar");
+  await expect(sidebar).toBeVisible();
+  await sidebar.getByPlaceholder(/example:/i).fill("Hello");
+  await sidebar.getByRole("button", { name: /send to ai/i }).click();
+  // The user message should appear in the chat history immediately.
+  await expect(sidebar.getByTestId("chat-user")).toBeVisible();
+  // Either an assistant reply or a graceful error message should follow.
+  await expect(
+    sidebar.getByTestId("chat-assistant").or(sidebar.locator('[role="alert"]')).first()
+  ).toBeVisible({ timeout: 30_000 });
 });

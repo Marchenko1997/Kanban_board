@@ -31,7 +31,7 @@ export default function Home() {
   const [chatMessages, setChatMessages] = useState<AiMessage[]>([]);
   const [chatError, setChatError] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const skipNextPersist = useRef(true);
+  const serverBoardRef = useRef<BoardData | null>(null);
 
   useEffect(() => {
     const isAuthenticated = window.localStorage.getItem(AUTH_STORAGE_KEY) === "true";
@@ -47,17 +47,18 @@ export default function Home() {
       setSyncState("saving");
       try {
         const loadedBoard = await fetchBoard(DEMO_USERNAME);
+        serverBoardRef.current = loadedBoard;
         setBoard(loadedBoard);
         setBackendMessage("");
       } catch {
         // Keep the frontend usable in environments where backend API is unavailable.
+        serverBoardRef.current = initialData;
         setBoard(initialData);
         setBackendMessage(
           "Backend is unavailable. Using local demo data for this session."
         );
       } finally {
         setSyncState("idle");
-        skipNextPersist.current = true;
       }
     };
 
@@ -69,35 +70,37 @@ export default function Home() {
       return;
     }
 
-    if (skipNextPersist.current) {
-      skipNextPersist.current = false;
+    if (board === serverBoardRef.current) {
       return;
     }
 
-    let isCanceled = false;
+    let canceled = false;
 
-    const persistBoard = async () => {
-      setSyncState("saving");
-      try {
-        await saveBoard(DEMO_USERNAME, board);
-        if (!isCanceled) {
-          setSyncState("idle");
-          setBackendMessage("");
+    const timer = setTimeout(() => {
+      const persistBoard = async () => {
+        setSyncState("saving");
+        try {
+          await saveBoard(DEMO_USERNAME, board);
+          if (!canceled) {
+            setSyncState("idle");
+            setBackendMessage("");
+          }
+        } catch {
+          if (!canceled) {
+            setSyncState("error");
+            setBackendMessage(
+              "Unable to save changes to backend. Changes remain local until backend is reachable."
+            );
+          }
         }
-      } catch {
-        if (!isCanceled) {
-          setSyncState("error");
-          setBackendMessage(
-            "Unable to save changes to backend. Changes remain local until backend is reachable."
-          );
-        }
-      }
-    };
+      };
 
-    void persistBoard();
+      void persistBoard();
+    }, 400);
 
     return () => {
-      isCanceled = true;
+      canceled = true;
+      clearTimeout(timer);
     };
   }, [authState, board]);
 
@@ -108,12 +111,12 @@ export default function Home() {
       window.localStorage.setItem(AUTH_STORAGE_KEY, "true");
       setAuthState("authenticated");
       setBoard(null);
+      serverBoardRef.current = null;
       setSyncState("idle");
       setBackendMessage("");
       setChatMessages([]);
       setChatError("");
       setIsAiLoading(false);
-      skipNextPersist.current = true;
       setErrorMessage("");
       setPassword("");
       return;
@@ -129,12 +132,12 @@ export default function Home() {
     setPassword("");
     setErrorMessage("");
     setBoard(null);
+    serverBoardRef.current = null;
     setSyncState("idle");
     setBackendMessage("");
     setChatMessages([]);
     setChatError("");
     setIsAiLoading(false);
-    skipNextPersist.current = true;
   };
 
   const handleAiSend = async (message: string) => {
@@ -151,7 +154,7 @@ export default function Home() {
       ]);
 
       if (result.board_updated) {
-        skipNextPersist.current = true;
+        serverBoardRef.current = result.board;
         setBoard(result.board);
       }
     } catch {
@@ -222,7 +225,7 @@ export default function Home() {
 
             {errorMessage ? (
               <p
-                className="text-sm font-medium text-[#b33a3a]"
+                className="text-sm font-medium text-[var(--error-red)]"
                 role="alert"
                 data-testid="login-error"
               >

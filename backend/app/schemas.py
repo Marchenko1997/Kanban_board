@@ -19,6 +19,11 @@ class BoardData(BaseModel):
     columns: list[Column]
     cards: dict[str, Card]
 
+    def missing_card_references(self) -> set[str]:
+        """Return any cardIds in columns that have no matching entry in cards."""
+        referenced = {cid for col in self.columns for cid in col.cardIds}
+        return referenced - self.cards.keys()
+
 
 class ChatHistoryItem(BaseModel):
     role: Literal["user", "assistant"]

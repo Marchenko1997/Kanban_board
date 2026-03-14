@@ -34,7 +34,7 @@ export const AiSidebar = ({
   };
 
   return (
-    <aside className="w-full rounded-3xl border border-[var(--stroke)] bg-white/95 p-5 shadow-[var(--shadow)] backdrop-blur">
+    <aside data-testid="ai-sidebar" className="w-full rounded-3xl border border-[var(--stroke)] bg-white/95 p-5 shadow-[var(--shadow)] backdrop-blur">
       <header className="border-b border-[var(--stroke)] pb-4">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--gray-text)]">
           AI Sidebar
@@ -72,7 +72,7 @@ export const AiSidebar = ({
       </div>
 
       {errorMessage ? (
-        <p className="mt-3 text-sm font-medium text-[#b33a3a]" role="alert">
+        <p className="mt-3 text-sm font-medium text-[var(--error-red)]" role="alert">
           {errorMessage}
         </p>
       ) : null}

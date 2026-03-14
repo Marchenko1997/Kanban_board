@@ -61,3 +61,15 @@ def test_invalid_payload_returns_422(client_with_db: tuple[TestClient, Path]) ->
     payload = {"columns": "invalid", "cards": {}}
     response = client.put("/api/users/user/board", json=payload)
     assert response.status_code == 422
+
+
+def test_board_with_orphaned_card_reference_returns_422(
+    client_with_db: tuple[TestClient, Path],
+) -> None:
+    client, _ = client_with_db
+    payload = {
+        "columns": [{"id": "col-1", "title": "Backlog", "cardIds": ["card-999"]}],
+        "cards": {},
+    }
+    response = client.put("/api/users/user/board", json=payload)
+    assert response.status_code == 422

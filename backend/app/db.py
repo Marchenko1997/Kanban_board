@@ -93,21 +93,13 @@ def get_user_board(username: str) -> BoardData | None:
 
 def update_user_board(username: str, board: BoardData) -> bool:
     with connect() as connection:
-        row = connection.execute(
-            "SELECT id FROM users WHERE username = ?",
-            (username,),
-        ).fetchone()
-        if row is None:
-            return False
-
         updated = connection.execute(
             """
             UPDATE boards
             SET board_json = ?, updated_at = datetime('now')
-            WHERE user_id = ?
+            WHERE user_id = (SELECT id FROM users WHERE username = ?)
             """,
-            (board.model_dump_json(), row["id"]),
+            (board.model_dump_json(), username),
         )
-
         return updated.rowcount > 0
 

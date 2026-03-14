@@ -41,6 +41,12 @@ def create_app() -> FastAPI:
 
     @app.put("/api/users/{username}/board", response_model=BoardData)
     def save_board(username: str, board: BoardData) -> BoardData:
+        missing = board.missing_card_references()
+        if missing:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Columns reference card IDs not in cards: {sorted(missing)}",
+            )
         updated = update_user_board(username, board)
         if not updated:
             raise HTTPException(status_code=404, detail="User board not found.")
@@ -74,13 +80,15 @@ def create_app() -> FastAPI:
         except OpenRouterError as exc:
             raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-        board_updated = ai_result.board_update is not None
-        if board_updated:
-            assert ai_result.board_update is not None
-            updated = update_user_board(username, ai_result.board_update)
-            if not updated:
-                raise HTTPException(status_code=404, detail="User board not found.")
-            board = ai_result.board_update
+        board_updated = False
+        if ai_result.board_update is not None:
+            proposed = ai_result.board_update
+            if not proposed.missing_card_references():
+                updated = update_user_board(username, proposed)
+                if not updated:
+                    raise HTTPException(status_code=404, detail="User board not found.")
+                board = proposed
+                board_updated = True
 
         return AiChatResponse(
             assistant_message=ai_result.assistant_message,
