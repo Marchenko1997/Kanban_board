@@ -30,7 +30,7 @@ export const KanbanCard = ({ card, onDelete }: KanbanCardProps) => {
       {...listeners}
       data-testid={`card-${card.id}`}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col items-start justify-between gap-3">
         <div>
           <h4 className="font-display text-base font-semibold text-[var(--navy-dark)]">
             {card.title}

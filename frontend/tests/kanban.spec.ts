@@ -1,13 +1,34 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
-test("loads the kanban board", async ({ page }) => {
+const signIn = async (page: Page) => {
   await page.goto("/");
+  await page.getByLabel("Username").fill("user");
+  await page.getByLabel("Password").fill("password");
+  await page.getByRole("button", { name: /sign in/i }).click();
   await expect(page.getByRole("heading", { name: "Kanban Studio" })).toBeVisible();
+};
+
+test("requires login before showing the board", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /sign in/i })).toBeVisible();
+});
+
+test("rejects invalid login", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Username").fill("user");
+  await page.getByLabel("Password").fill("bad-password");
+  await page.getByRole("button", { name: /sign in/i }).click();
+  await expect(page.getByTestId("login-error")).toContainText("Invalid username or password.");
+});
+
+test("loads the kanban board after login", async ({ page }) => {
+  await signIn(page);
   await expect(page.locator('[data-testid^="column-"]')).toHaveCount(5);
 });
 
 test("adds a card to a column", async ({ page }) => {
-  await page.goto("/");
+  await signIn(page);
   const firstColumn = page.locator('[data-testid^="column-"]').first();
   await firstColumn.getByRole("button", { name: /add a card/i }).click();
   await firstColumn.getByPlaceholder("Card title").fill("Playwright card");
@@ -17,9 +38,12 @@ test("adds a card to a column", async ({ page }) => {
 });
 
 test("moves a card between columns", async ({ page }) => {
-  await page.goto("/");
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await signIn(page);
   const card = page.getByTestId("card-card-1");
   const targetColumn = page.getByTestId("column-col-review");
+  await card.scrollIntoViewIfNeeded();
+  await targetColumn.scrollIntoViewIfNeeded();
   const cardBox = await card.boundingBox();
   const columnBox = await targetColumn.boundingBox();
   if (!cardBox || !columnBox) {
@@ -38,4 +62,10 @@ test("moves a card between columns", async ({ page }) => {
   );
   await page.mouse.up();
   await expect(targetColumn.getByTestId("card-card-1")).toBeVisible();
+});
+
+test("logs out and returns to sign in", async ({ page }) => {
+  await signIn(page);
+  await page.getByRole("button", { name: /log out/i }).click();
+  await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
 });
