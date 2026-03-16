@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
+import { GripVertical, Trash2 } from "lucide-react";
 import type { Card } from "@/lib/kanban";
 
 type KanbanCardProps = {
@@ -22,30 +23,35 @@ export const KanbanCard = ({ card, onDelete }: KanbanCardProps) => {
       ref={setNodeRef}
       style={style}
       className={clsx(
-        "rounded-2xl border border-transparent bg-white px-4 py-4 shadow-[0_12px_24px_rgba(3,33,71,0.08)]",
+        "group rounded-2xl border border-transparent bg-white px-3 py-3 shadow-[0_12px_24px_rgba(3,33,71,0.08)]",
         "transition-all duration-150",
         isDragging && "opacity-60 shadow-[0_18px_32px_rgba(3,33,71,0.16)]"
       )}
-      {...attributes}
-      {...listeners}
       data-testid={`card-${card.id}`}
     >
-      <div className="flex flex-col items-start justify-between gap-3">
-        <div>
-          <h4 className="font-display text-base font-semibold text-[var(--navy-dark)]">
+      <div className="flex items-start gap-2">
+        <div
+          className="mt-0.5 shrink-0 cursor-grab text-[var(--gray-text)] opacity-0 transition group-hover:opacity-60"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical size={14} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h4 className="font-display text-sm font-semibold leading-snug text-[var(--navy-dark)]">
             {card.title}
           </h4>
-          <p className="mt-2 text-sm leading-6 text-[var(--gray-text)]">
+          <p className="mt-1 text-xs leading-5 text-[var(--gray-text)]">
             {card.details}
           </p>
         </div>
         <button
           type="button"
           onClick={() => onDelete(card.id)}
-          className="rounded-full border border-transparent py-1 text-xs font-semibold text-[var(--gray-text)] transition hover:border-[var(--stroke)] hover:text-[var(--navy-dark)]"
+          className="shrink-0 rounded-lg p-1 text-[var(--gray-text)] opacity-0 transition hover:bg-[var(--surface)] hover:text-[var(--error-red)] group-hover:opacity-100"
           aria-label={`Delete ${card.title}`}
         >
-          Remove
+          <Trash2 size={14} />
         </button>
       </div>
     </article>

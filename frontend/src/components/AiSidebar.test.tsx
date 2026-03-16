@@ -15,7 +15,7 @@ describe("AiSidebar", () => {
     );
 
     expect(
-      screen.getByText(/No messages yet\. Ask the assistant/i)
+      screen.getByText(/Ask the assistant to update your board/i)
     ).toBeInTheDocument();
   });
 
@@ -31,10 +31,10 @@ describe("AiSidebar", () => {
     );
 
     await userEvent.type(
-      screen.getByPlaceholderText(/Example: Move card-1 to Review/i),
+      screen.getByPlaceholderText(/Ask the AI/i),
       "Create a card for API tests"
     );
-    await userEvent.click(screen.getByRole("button", { name: /send to ai/i }));
+    await userEvent.click(screen.getByRole("button", { name: /send message/i }));
 
     expect(onSend).toHaveBeenCalledWith("Create a card for API tests");
   });

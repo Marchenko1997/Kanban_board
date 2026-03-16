@@ -261,10 +261,10 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1880px] px-3 pb-8 pt-4 lg:flex lg:items-start lg:gap-6">
-      <div className="min-w-0 flex-1">
+    <div className="flex h-screen w-full overflow-hidden">
+      <div className="min-w-0 flex-1 overflow-y-auto">
         {backendMessage ? (
-          <div className="mx-auto mt-4 w-full max-w-[1500px] rounded-xl border border-[var(--stroke)] bg-white px-4 py-3 text-sm text-[var(--gray-text)]">
+          <div className="mx-4 mt-4 rounded-xl border border-[var(--stroke)] bg-white px-4 py-2 text-xs text-[var(--gray-text)]">
             {backendMessage}
           </div>
         ) : null}
@@ -275,7 +275,7 @@ export default function Home() {
           syncState={syncState}
         />
       </div>
-      <div className="mt-6 lg:sticky lg:top-6 lg:mt-10 lg:w-[360px] lg:shrink-0">
+      <div className="hidden w-[320px] shrink-0 border-l border-[var(--stroke)] bg-[var(--surface)] p-3 lg:flex lg:flex-col">
         <AiSidebar
           messages={chatMessages}
           isLoading={isAiLoading}

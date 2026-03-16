@@ -30,7 +30,7 @@ describe("KanbanBoard", () => {
     render(<KanbanBoardHarness />);
     const column = getFirstColumn();
     const addButton = within(column).getByRole("button", {
-      name: /add a card/i,
+      name: /add card/i,
     });
     await userEvent.click(addButton);
 
@@ -39,7 +39,7 @@ describe("KanbanBoard", () => {
     const detailsInput = within(column).getByPlaceholderText(/details/i);
     await userEvent.type(detailsInput, "Notes");
 
-    await userEvent.click(within(column).getByRole("button", { name: /add card/i }));
+    await userEvent.click(within(column).getByRole("button", { name: /^add$/i }));
 
     expect(within(column).getByText("New card")).toBeInTheDocument();
 
