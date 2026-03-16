@@ -25,7 +25,6 @@ export const BoardDashboard = ({
 }: BoardDashboardProps) => {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
-  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
@@ -34,15 +33,6 @@ export const BoardDashboard = ({
     await onCreateBoard(name);
     setNewName("");
     setShowCreate(false);
-  };
-
-  const handleDeleteClick = (boardId: number) => {
-    if (deleteConfirmId === boardId) {
-      void onDeleteBoard(boardId);
-      setDeleteConfirmId(null);
-    } else {
-      setDeleteConfirmId(boardId);
-    }
   };
 
   return (
@@ -107,18 +97,9 @@ export const BoardDashboard = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleDeleteClick(board.id)}
-                  className={`rounded-lg p-1.5 transition ${
-                    deleteConfirmId === board.id
-                      ? "bg-red-50 text-[var(--error-red)]"
-                      : "text-[var(--gray-text)] hover:bg-[var(--surface)] hover:text-[var(--error-red)]"
-                  }`}
-                  aria-label={
-                    deleteConfirmId === board.id
-                      ? "Confirm delete"
-                      : `Delete ${board.name}`
-                  }
-                  title={deleteConfirmId === board.id ? "Click again to confirm" : "Delete board"}
+                  onClick={() => void onDeleteBoard(board.id)}
+                  className="rounded-lg p-1.5 text-[var(--gray-text)] transition hover:bg-[var(--surface)] hover:text-[var(--error-red)]"
+                  aria-label={`Delete ${board.name}`}
                 >
                   <Trash2 size={16} />
                 </button>

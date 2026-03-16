@@ -108,6 +108,24 @@ describe("BoardDashboard", () => {
     expect(onCreate).toHaveBeenCalledWith("My Project");
   });
 
+  it("calls onDeleteBoard on the first click of the delete button", async () => {
+    const onDelete = vi.fn().mockResolvedValue(undefined);
+    render(
+      <BoardDashboard
+        username="alice"
+        boards={boards}
+        onOpenBoard={vi.fn()}
+        onCreateBoard={vi.fn()}
+        onDeleteBoard={onDelete}
+        onLogout={vi.fn()}
+        isCreating={false}
+      />
+    );
+    await userEvent.click(screen.getByRole("button", { name: /delete sprint 1/i }));
+    expect(onDelete).toHaveBeenCalledTimes(1);
+    expect(onDelete).toHaveBeenCalledWith(boards[0].id);
+  });
+
   it("calls onLogout when sign out is clicked", async () => {
     const onLogout = vi.fn();
     render(
