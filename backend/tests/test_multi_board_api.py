@@ -69,11 +69,26 @@ def test_new_board_starts_empty(client: TestClient) -> None:
         "/api/boards", headers=_auth(token), json={"name": "Empty Project"}
     )
     assert response.status_code == 201
-    board = response.json()["board"]
+    payload = response.json()
+    board_id = payload["id"]
+    board = payload["board"]
+
     assert board["cards"] == {}, "New board should have no cards"
+    assert len(board["columns"]) == 5, "New board should have exactly five columns"
     for column in board["columns"]:
         assert column["cardIds"] == [], f"Column {column['title']!r} should have no cards"
-    assert {col["title"] for col in board["columns"]} == {"To Do", "In Progress", "Done"}
+
+    column_titles = [col["title"] for col in board["columns"]]
+    assert column_titles == ["Backlog", "Discovery", "In Progress", "Review", "Done"]
+
+    # Verify the data is stored under this board's ID, not copied from another board
+    get_resp = client.get(f"/api/boards/{board_id}", headers=_auth(token))
+    assert get_resp.status_code == 200
+    fetched = get_resp.json()["board"]
+    assert fetched["cards"] == {}
+    assert [col["title"] for col in fetched["columns"]] == [
+        "Backlog", "Discovery", "In Progress", "Review", "Done"
+    ]
 
 
 def test_create_board_empty_name_returns_422(client: TestClient) -> None:
