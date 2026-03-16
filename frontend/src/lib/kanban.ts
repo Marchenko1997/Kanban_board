@@ -15,6 +15,19 @@ export type BoardData = {
   cards: Record<string, Card>;
 };
 
+export type BoardMeta = {
+  id: number;
+  name: string;
+  updated_at: string;
+};
+
+export type BoardFull = {
+  id: number;
+  name: string;
+  board: BoardData;
+  updated_at: string;
+};
+
 export const initialData: BoardData = {
   columns: [
     { id: "col-backlog", title: "Backlog", cardIds: ["card-1", "card-2"] },

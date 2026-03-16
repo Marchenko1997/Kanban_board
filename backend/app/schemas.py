@@ -48,3 +48,52 @@ class AiChatResponse(BaseModel):
 
 class AiPingResponse(BaseModel):
     reply: str
+
+
+# ---------------------------------------------------------------------------
+# Auth schemas
+# ---------------------------------------------------------------------------
+
+class UserCreate(BaseModel):
+    username: str = Field(min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$")
+    password: str = Field(min_length=8)
+
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
+class UserResponse(BaseModel):
+    username: str
+    created_at: str
+
+
+class TokenResponse(BaseModel):
+    token: str
+    username: str
+
+
+# ---------------------------------------------------------------------------
+# Board management schemas
+# ---------------------------------------------------------------------------
+
+class BoardCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+
+
+class BoardRename(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+
+
+class BoardMeta(BaseModel):
+    id: int
+    name: str
+    updated_at: str
+
+
+class BoardFull(BaseModel):
+    id: int
+    name: str
+    board: BoardData
+    updated_at: str

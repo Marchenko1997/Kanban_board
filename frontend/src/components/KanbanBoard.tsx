@@ -11,22 +11,26 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { LogOut, Cloud, CloudOff, Loader2 } from "lucide-react";
+import { LogOut, Cloud, CloudOff, Loader2, ArrowLeft } from "lucide-react";
 import { KanbanColumn } from "@/components/KanbanColumn";
 import { KanbanCardPreview } from "@/components/KanbanCardPreview";
 import { createId, moveCard, type BoardData } from "@/lib/kanban";
 
 type KanbanBoardProps = {
   board: BoardData;
+  boardName?: string;
   onBoardChange: Dispatch<SetStateAction<BoardData>>;
   onLogout?: () => void;
+  onBack?: () => void;
   syncState?: "idle" | "saving" | "error";
 };
 
 export const KanbanBoard = ({
   board,
+  boardName,
   onBoardChange,
   onLogout,
+  onBack,
   syncState = "idle",
 }: KanbanBoardProps) => {
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
@@ -111,9 +115,19 @@ export const KanbanBoard = ({
       <main className="relative flex min-h-screen w-full flex-col gap-6 px-4 pb-8 pt-6">
         <header className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--stroke)] bg-white/80 px-5 py-4 shadow-sm backdrop-blur">
           <div className="flex items-center gap-4">
+            {onBack ? (
+              <button
+                type="button"
+                onClick={onBack}
+                className="rounded-lg p-1.5 text-[var(--gray-text)] transition hover:bg-[var(--surface)] hover:text-[var(--primary-blue)]"
+                aria-label="Back to boards"
+              >
+                <ArrowLeft size={16} />
+              </button>
+            ) : null}
             <div>
               <h1 className="font-display text-xl font-semibold text-[var(--navy-dark)]">
-                Kanban Studio
+                {boardName ?? "Kanban Studio"}
               </h1>
               <p className="text-xs text-[var(--gray-text)]">
                 Drag cards, rename columns, stay focused.
