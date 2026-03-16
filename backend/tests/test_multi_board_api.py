@@ -60,7 +60,20 @@ def test_create_board(client: TestClient) -> None:
     payload = response.json()
     assert payload["name"] == "Sprint 1"
     assert "id" in payload
-    assert payload["board"]["columns"]
+    assert isinstance(payload["board"]["columns"], list)
+
+
+def test_new_board_starts_empty(client: TestClient) -> None:
+    token = _login(client)
+    response = client.post(
+        "/api/boards", headers=_auth(token), json={"name": "Empty Project"}
+    )
+    assert response.status_code == 201
+    board = response.json()["board"]
+    assert board["cards"] == {}, "New board should have no cards"
+    for column in board["columns"]:
+        assert column["cardIds"] == [], f"Column {column['title']!r} should have no cards"
+    assert {col["title"] for col in board["columns"]} == {"To Do", "In Progress", "Done"}
 
 
 def test_create_board_empty_name_returns_422(client: TestClient) -> None:

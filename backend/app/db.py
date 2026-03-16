@@ -3,7 +3,7 @@ import os
 import sqlite3
 from pathlib import Path
 
-from app.board_seed import DEFAULT_BOARD
+from app.board_seed import DEFAULT_BOARD, EMPTY_BOARD
 from app.schemas import BoardData
 
 DB_PATH_ENV = "PM_DB_PATH"
@@ -128,7 +128,7 @@ def create_user(
         user_id = cursor.lastrowid
         connection.execute(
             "INSERT INTO boards (user_id, name, board_json) VALUES (?, ?, ?)",
-            (user_id, "My Board", json.dumps(DEFAULT_BOARD)),
+            (user_id, "My Board", json.dumps(EMPTY_BOARD)),
         )
         return user_id
 
@@ -159,7 +159,7 @@ def create_board(
             raise ValueError(f"User {username!r} not found.")
         cursor = connection.execute(
             "INSERT INTO boards (user_id, name, board_json) VALUES (?, ?, ?)",
-            (user_row["id"], name, json.dumps(DEFAULT_BOARD)),
+            (user_row["id"], name, json.dumps(EMPTY_BOARD)),
         )
         board_id = cursor.lastrowid
         row = connection.execute(

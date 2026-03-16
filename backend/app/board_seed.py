@@ -1,3 +1,12 @@
+EMPTY_BOARD = {
+    "columns": [
+        {"id": "col-todo", "title": "To Do", "cardIds": []},
+        {"id": "col-in-progress", "title": "In Progress", "cardIds": []},
+        {"id": "col-done", "title": "Done", "cardIds": []},
+    ],
+    "cards": {},
+}
+
 DEFAULT_BOARD = {
     "columns": [
         {"id": "col-backlog", "title": "Backlog", "cardIds": ["card-1", "card-2"]},
