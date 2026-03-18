@@ -153,10 +153,9 @@ def create_app() -> FastAPI:
                 status_code=422,
                 detail=f"Columns reference card IDs not in cards: {sorted(missing)}",
             )
-        updated = update_board_data(board_id, current_user, board)
-        if not updated:
+        row = update_board_data(board_id, current_user, board)
+        if not row:
             raise HTTPException(status_code=404, detail="Board not found.")
-        row = get_board_for_user(board_id, current_user)
         return BoardFull(
             id=row["id"],
             name=row["name"],
@@ -170,10 +169,9 @@ def create_app() -> FastAPI:
         body: BoardRename,
         current_user: str = Depends(get_current_user),
     ) -> BoardMeta:
-        updated = rename_board(board_id, current_user, body.name)
-        if not updated:
+        row = rename_board(board_id, current_user, body.name)
+        if not row:
             raise HTTPException(status_code=404, detail="Board not found.")
-        row = get_board_for_user(board_id, current_user)
         return BoardMeta(id=row["id"], name=row["name"], updated_at=row["updated_at"])
 
     @app.delete("/api/boards/{board_id}", status_code=204)

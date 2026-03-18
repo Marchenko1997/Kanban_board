@@ -139,7 +139,7 @@ export const deleteBoardApi = async (
 ): Promise<void> => {
   const response = await fetch(`${API_BASE}/api/boards/${boardId}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
+    headers: authHeaders(token),
   });
   if (!response.ok) {
     throw new Error(await parseError(response));

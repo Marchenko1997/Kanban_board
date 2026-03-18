@@ -71,8 +71,6 @@ def _migrate_schema(connection: sqlite3.Connection) -> None:
 
 
 def initialize_database() -> None:
-    from app.auth import hash_password
-
     db_path = get_db_path()
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -81,17 +79,24 @@ def initialize_database() -> None:
         connection.execute(CREATE_BOARDS_TABLE_SQL)
         _migrate_schema(connection)
 
-        default_hash = hash_password("password")
-        connection.execute(
-            "INSERT INTO users (username, password_hash) VALUES (?, ?)"
-            " ON CONFLICT(username) DO NOTHING",
-            (DEFAULT_USERNAME, default_hash),
-        )
-
         user_row = connection.execute(
             "SELECT id FROM users WHERE username = ?",
             (DEFAULT_USERNAME,),
         ).fetchone()
+
+        if user_row is None:
+            from app.auth import hash_password
+
+            default_hash = hash_password("password")
+            cursor = connection.execute(
+                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+                (DEFAULT_USERNAME, default_hash),
+            )
+            user_row = connection.execute(
+                "SELECT id FROM users WHERE username = ?",
+                (DEFAULT_USERNAME,),
+            ).fetchone()
+
         if user_row is None:
             raise RuntimeError("Unable to seed default user.")
 
@@ -187,32 +192,34 @@ def get_board_for_user(
 
 def update_board_data(
     board_id: int, username: str, board: BoardData, db_path: Path | None = None
-) -> bool:
+) -> dict | None:
     with connect(db_path) as connection:
-        result = connection.execute(
+        row = connection.execute(
             """
             UPDATE boards
             SET board_json = ?, updated_at = datetime('now')
             WHERE id = ? AND user_id = (SELECT id FROM users WHERE username = ?)
+            RETURNING id, name, updated_at
             """,
             (board.model_dump_json(), board_id, username),
-        )
-        return result.rowcount > 0
+        ).fetchone()
+        return dict(row) if row else None
 
 
 def rename_board(
     board_id: int, username: str, name: str, db_path: Path | None = None
-) -> bool:
+) -> dict | None:
     with connect(db_path) as connection:
-        result = connection.execute(
+        row = connection.execute(
             """
             UPDATE boards
             SET name = ?, updated_at = datetime('now')
             WHERE id = ? AND user_id = (SELECT id FROM users WHERE username = ?)
+            RETURNING id, name, updated_at
             """,
             (name, board_id, username),
-        )
-        return result.rowcount > 0
+        ).fetchone()
+        return dict(row) if row else None
 
 
 def delete_board(
@@ -245,8 +252,8 @@ def get_user_board(username: str, db_path: Path | None = None) -> BoardData | No
 
 def update_user_board(
     username: str, board: BoardData, db_path: Path | None = None
-) -> bool:
+) -> dict | None:
     boards = list_user_boards(username, db_path)
     if not boards:
-        return False
+        return None
     return update_board_data(boards[0]["id"], username, board, db_path)

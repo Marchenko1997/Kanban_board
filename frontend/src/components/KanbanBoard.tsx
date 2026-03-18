@@ -1,6 +1,6 @@
 "use client";
 
-import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -40,8 +40,6 @@ export const KanbanBoard = ({
       activationConstraint: { distance: 6 },
     })
   );
-
-  const cardsById = useMemo(() => board.cards, [board.cards]);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveCardId(event.active.id as string);
@@ -105,7 +103,7 @@ export const KanbanBoard = ({
     });
   };
 
-  const activeCard = activeCardId ? cardsById[activeCardId] : null;
+  const activeCard = activeCardId ? board.cards[activeCardId] : null;
 
   return (
     <div className="relative overflow-hidden">
